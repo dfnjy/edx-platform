@@ -1,7 +1,6 @@
-from django.http import HttpResponse, Http404
-from django.core.context_processors import csrf
 from mitxmako.shortcuts import render_to_string
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import HttpResponse
 
 import requests
 import json
@@ -11,59 +10,98 @@ import enchant
 import string
 
 
+CONTENT_TYPES = ("transcript", "problem", "pdf")
+
+
 def search(request):
     context = {}
     results_string = ""
     if request.GET:
         results_string = find(request)
-        context.update({"old_query": request.GET['s']})
-    search_bar = render_to_string("search.html", context)
-    return HttpResponse(search_bar + results_string)
+        context.update({"old_query": request.GET.get('s', "")})
+    context.update({"previous": request.GET})
+    search_bar = render_to_string("search_templates/search.html", context)
+    full_html = render_to_string("search_templates/wrapper.html", {"body": search_bar+results_string})
+    return HttpResponse(full_html)
 
 
 def find(request, database="http://127.0.0.1:9200",
          field="searchable_text", max_result=100):
-    query = request.GET.get("s", "")
+    get_content = lambda request, content: content+"-index" if request.GET.get(content, False) else None
+    query = request.GET.get("s", "*.*")
     page = request.GET.get("page", 1)
     results_per_page = request.GET.get("results", 15)
-    ordering = request.GET.get("ordering", False)
-    index = request.GET.get("content", "transcript")+"-index"
+    index = ",".join(filter(None, [get_content(request, content) for content in CONTENT_TYPES]))
     full_url = "/".join([database, index, "_search?q="+field+":"])
     context = {}
-
-    try:
-        results = json.loads(requests.get(full_url+query+"&size="+str(max_result))._content)["hits"]["hits"]
-        data = [entry["_source"] for entry in results]
-        #titles = [entry["display_name"] for entry in data]
-        uuids = [entry["display_name"] for entry in data]
-        transcripts = [entry["searchable_text"] for entry in data]
-        snippets = [snippet_generator(transcript, query) for transcript in transcripts]
-        data = zip(uuids, snippets)
-        data = proper_page(page, data, results_per_page)
-    except KeyError:
-        data = [("No results found", "Please try again")]
-    context.update({"data": data})
+    response = requests.get(full_url+query+"&size="+str(max_result))
+    results = json.loads(response._content).get("hits", {"hits": ""})["hits"]
+    data = [entry["_source"] for entry in results]
+    #titles = [entry["display_name"] for entry in data]
+    uuids = [entry["display_name"] for entry in data]
+    transcripts = [entry["searchable_text"] for entry in data]
+    snippets = [snippet_generator(transcript, query) for transcript in transcripts]
+    thumbnails = ["data:image/jpg;base64,"+entry["thumbnail"] for entry in data]
+    urls = [get_datum_url(request, datum) for datum in data]
+    data = zip(uuids, snippets, thumbnails, urls)
+    if len(data) == 0:
+        data = [("No results found, please try again", "")]
+        context.update({"results": "false"})
+    else:
+        context.update({"results": "true"})
 
     correction = spell_check(query)
     results_pages = Paginator(data, results_per_page)
+
+    data = proper_page(results_pages, page)
+    context.update({"data": data})
+    context.update({"next_page": next_link(request, data), "prev_page": prev_link(request, data)})
+    context.update({"search_correction_link": search_correction_link(request, correction)})
     context.update({"spelling_correction": correction})
     return render_to_string("search_templates/results.html", context)
+
+
+def get_datum_url(request, datum):
+    url = request.environ.get('HTTP_REFERER', "")
+    host = request.environ.get("HTTP_HOST", "edx.org")
+    trigger = "courseware"
+    if trigger in url:
+        base = url[:url.find(trigger)+len(trigger)+1]
+        return base+datum["url"]
+    else:
+        return "http://" + host + "/courses/" + datum["course_section"]+"/courseware/" + datum["url"]
 
 
 def query_reduction(query, stopwords):
     return [word.lower() for word in query.split() if word not in stopwords]
 
 
-def proper_page(page, data, results_per_page=15):
-    pages = Paginator(data, results_per_page)
-    correct_page = ""
+def proper_page(pages, index):
+    correct_page = pages.page(1)
     try:
-        correct_page = pages.page(page)
+        correct_page = pages.page(index)
     except PageNotAnInteger:
         correct_page = pages.page(1)
     except EmptyPage:
         correct_page = pages.page(pages.num_pages)
     return correct_page
+
+
+def next_link(request, paginator):
+    return request.path+"?s="+request.GET.get("s", "") + \
+        "&content=" + request.GET.get("content", "transcript") + "&page="+str(paginator.next_page_number())
+
+
+def prev_link(request, paginator):
+    return request.path+"?s="+request.GET.get("s", "") + \
+        "&content=" + request.GET.get("content", "transcript") + "&page="+str(paginator.previous_page_number())
+
+
+def search_correction_link(request, term, page="1"):
+    if term:
+        return request.path+"?s="+term+"&page="+page+"&content="+request.GET.get("content", "transcript")
+    else:
+        return request.path+"?s="+request.GET["s"]+"&page"+page+"&content="+request.GET.get("content", "transcript")
 
 
 def match(words):
@@ -88,7 +126,7 @@ def match_highlighter(query, response, tag="b", css_class="highlight", highlight
     return bold_response
 
 
-def snippet_generator(transcript, query, soft_max=50, word_margin=30, bold=True):
+def snippet_generator(transcript, query, soft_max=50, word_margin=25, bold=True):
     punkt = nltk.data.load('tokenizers/punkt/english.pickle')
     stop_words = word_filter.stopwords.words("english")
     sentences = punkt.tokenize(transcript)

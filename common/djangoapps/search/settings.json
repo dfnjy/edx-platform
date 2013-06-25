@@ -56,14 +56,28 @@
 					"store": "true"
 				},
 
-				"course_id": {
+				"course": {
 					"type": "string",
 					"store":"true"
+				},
+
+				"course_section": {
+					"type": "string",
+					"store": "true"
 				},
 
 				"uuid": {
 					"type": "string",
 					"store": "true"
+				},
+
+				"url": {
+					"type": "string",
+					"store": "true"
+				},
+				
+				"thumbnail": {
+					"type": "binary"
 				}
 			}
 		}
