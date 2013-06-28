@@ -23,6 +23,7 @@ import random
 def seed():
     return os.getppid()
 
+
 MODULESTORE_OPTIONS = {
     'default_class': 'xmodule.raw_module.RawDescriptor',
     'host': 'localhost',
