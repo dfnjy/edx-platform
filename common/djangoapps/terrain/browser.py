@@ -129,7 +129,3 @@ def teardown_browser(total):
     Quit the browser after executing the tests.
     """
     world.browser.quit()
-    mongo = MongoClient()
-    mongo.drop_database(settings.CONTENTSTORE['OPTIONS']['db'])
-    modulestore = xmodule.modulestore.django.modulestore()
-    modulestore.collection.drop()
