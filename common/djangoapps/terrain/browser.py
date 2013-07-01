@@ -20,6 +20,8 @@ from cms import one_time_startup        # pylint: disable=W0611
 from pymongo import MongoClient
 import xmodule.modulestore.django
 from xmodule.contentstore.django import _CONTENTSTORE
+import tempfile
+import os
 
 # There is an import issue when using django-staticfiles with lettuce
 # Lettuce assumes that we are using django.contrib.staticfiles,
@@ -47,6 +49,8 @@ def initial_setup(server):
     """
     Launch the browser once before executing the tests.
     """
+    os.remove(os.path.join(tempfile.gettempdir(), 'lettuce-django.pid'))
+    from pdb import set_trace; set_trace()
     browser_driver = getattr(settings, 'LETTUCE_BROWSER', 'chrome')
 
     # There is an issue with ChromeDriver2 r195627 on Ubuntu

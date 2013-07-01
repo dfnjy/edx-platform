@@ -19,9 +19,9 @@ logging.disable(logging.ERROR)
 import os
 import random
 
-
 def seed():
     return os.getppid()
+
 
 # Use the mongo store for acceptance tests
 modulestore_options = {
