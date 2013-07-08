@@ -18,6 +18,12 @@ import logging
 logging.disable(logging.ERROR)
 import os
 import random
+import os
+
+
+def seed():
+    return os.getppid()
+
 
 
 def seed():

@@ -50,7 +50,6 @@ def initial_setup(server):
     Launch the browser once before executing the tests.
     """
     os.remove(os.path.join(tempfile.gettempdir(), 'lettuce-django.pid'))
-    from pdb import set_trace; set_trace()
     browser_driver = getattr(settings, 'LETTUCE_BROWSER', 'chrome')
 
     # There is an issue with ChromeDriver2 r195627 on Ubuntu
