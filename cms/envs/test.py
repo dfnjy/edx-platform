@@ -17,6 +17,10 @@ import os
 from path import path
 from warnings import filterwarnings
 
+
+def seed():
+    return os.getppid()
+
 # Nose Test Runner
 INSTALLED_APPS += ('django_nose',)
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -47,7 +51,7 @@ MODULESTORE_OPTIONS = {
     'default_class': 'xmodule.raw_module.RawDescriptor',
     'host': 'localhost',
     'db': 'test_xmodule',
-    'collection': 'test_modulestore',
+    'collection': 'test_modulestore_%s' % seed(),
     'fs_root': TEST_ROOT / "data",
     'render_template': 'mitxmako.shortcuts.render_to_string',
 }
@@ -75,7 +79,7 @@ CONTENTSTORE = {
     'ENGINE': 'xmodule.contentstore.mongo.MongoContentStore',
     'OPTIONS': {
         'host': 'localhost',
-        'db': 'test_xcontent',
+        'db': 'test_xcontent_%s' % seed(),
     },
     # allow for additional options that can be keyed on a name, e.g. 'trashcan'
     'ADDITIONAL_OPTIONS': {
@@ -88,7 +92,7 @@ CONTENTSTORE = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': TEST_ROOT / "db" / "cms.db",
+        'NAME': TEST_ROOT / "db" / "cms_%s.db" % seed(),
     },
 }
 

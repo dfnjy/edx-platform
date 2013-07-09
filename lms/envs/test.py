@@ -17,6 +17,10 @@ import os
 from path import path
 from warnings import filterwarnings
 
+
+def seed():
+    return os.getppid()
+
 # can't test start dates with this True, but on the other hand,
 # can test everything else :)
 MITX_FEATURES['DISABLE_START_DATES'] = True
@@ -101,7 +105,7 @@ MODULESTORE = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': TEST_ROOT / 'db' / 'mitx.db'
+        'NAME': TEST_ROOT / 'db' / 'mitx_%s.db' % seed()
     },
 
 }
