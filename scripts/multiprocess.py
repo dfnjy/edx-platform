@@ -7,7 +7,7 @@ from subprocess import call
 
 
 def execute_feature(index, feature, system):
-    time.sleep((index % 4) * 1.5)
+    time.sleep((index % cpu_count()) * 1.5)
     call("rake fasttest_acceptance_{}[{}]".format(system, feature), shell=True)
 
 if __name__ == '__main__':
