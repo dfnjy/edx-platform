@@ -93,6 +93,11 @@ TEST_TASK_DIRS = []
 
     task :fasttest => "fasttest_#{system}"
 
+    desc "Run all features in parallel"
+    task "multiprocess_acceptance_#{system}" do
+        test_sh("python scripts/multiprocess.py #{system}")
+    end
+
     TEST_TASK_DIRS << system
 end
 
