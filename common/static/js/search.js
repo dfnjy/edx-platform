@@ -75,15 +75,23 @@ function getParameters(){
     return params;
 }
 
+function getSearchAction(){
+    var urlSplit = document.URL.split("/");
+    var courseIndex = urlSplit.indexOf("courses")
+    var searchAction = urlSplit.slice(courseIndex, courseIndex+4)
+    searchAction.push("search")
+    return searchAction.join("/");
+}
+
 function constructSearchBox(value){
     var searchWrapper = document.createElement("div");
-    searchWrapper.className = "search-wrapper";
+    searchWrapper.className = "animated fadeInRight search-wrapper";
     searchWrapper.id = "search-wrapper";
 
     var searchForm = document.createElement("form");
     searchForm.className = "auto-submit";
     searchForm.id = "query-box";
-    searchForm.action = "search";
+    searchForm.action = "/"+getSearchAction();
     searchForm.method = "get";
 
     var searchBoxWrapper = document.createElement("div");
@@ -104,17 +112,26 @@ function constructSearchBox(value){
 }
 
 function replaceWithSearch(){
+    $(this).addClass("animated fadeOut");
     var searchWrapper = constructSearchBox("");
-    this.parentNode.replaceChild(searchWrapper, this);
-    if (document.URL.indexOf("search?s=") == -1){
-        document.getElementById("searchbox").focus();
-    }
+    var width = $("div.search-icon").width()
+    var height = $("div.search-icon").height()
+    $(this).on('webkitAnimationEnd oanimationend oAnimationEnd msAnimationEnd animationend',
+        function (e){
+            $(this).parent().replaceWith(searchWrapper);
+            $("#searchbox").css("width", width)
+            $("#searchbox").css("height", height)
+            // $('#search-bar').remove()
+            if (document.URL.indexOf("search?s=") == -1){
+                document.getElementById("searchbox").focus();
+        }
+    });
 }
 
 function updateOldSearch(){
     var params = getParameters();
-    var newBox = constructSearchBox(params.s);
-    var courseTab = $("li a:contains('Search')").get(0);
+    var newBox = constructSearchBox(old_query);
+    var courseTab = $("a.search-bar").get(0);
     if (typeof courseTab != 'undefined'){
         courseTab.parentNode.replaceChild(newBox, courseTab);
     }
@@ -124,7 +141,7 @@ $(document).ready(function(){
     if (document.URL.indexOf("search?s=") !== -1){
         updateOldSearch();
     } else {
-        $("li a:contains('Search')").bind("click", replaceWithSearch);
+        $("a.search-bar").bind("click", replaceWithSearch);
     }
 });
 
