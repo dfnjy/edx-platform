@@ -315,6 +315,7 @@ def instructor_dashboard(request, course_id):
         )
         problem_urlname = request.POST.get('problem_for_student', '')
         module_state_key = get_module_url(problem_urlname)
+        problem_url = get_module_url(problem_urlname)
         # try to uniquely id student by email address or username
         message, student = get_student_from_identifier(unique_student_identifier)
         msg += message
