@@ -144,10 +144,10 @@ Vertical
     :members:
     :show-inheritance:
 
-Video
-=====
+Videoalpha
+==========
 
-.. automodule:: xmodule.video_module
+.. automodule:: xmodule.videoalpha_module
     :members:
     :show-inheritance:
 
