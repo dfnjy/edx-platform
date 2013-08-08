@@ -53,6 +53,11 @@ def initial_setup(server):
     desired_capabilities['platform'] = "Linux"
     desired_capabilities['version'] = ""
     desired_capabilities['name'] = "lettuce acceptance test"
+    desired_capabilities['passed'] = True
+    desired_capabilities['video-upload-on-pass'] = False
+    desired_capabilities['record-screenshots'] = False
+    desired_capabilities['selenium-version'] = "2.33.0"
+    desired_capabilities['max-duration'] = 3600
 
     # There is an issue with ChromeDriver2 r195627 on Ubuntu
     # in which we sometimes get an invalid browser session.
@@ -65,8 +70,8 @@ def initial_setup(server):
         # world.browser = Browser(browser_driver)
         world.browser = Browser(
             'remote',
-            desired_capabilities=desired_capabilities,
-            url="http://<user>:<access_key>@ondemand.saucelabs.com:80/wd/hub"
+            url="http://<user>:<access_key>@ondemand.saucelabs.com:80/wd/hub",
+            **desired_capabilities
         )
         world.browser.driver.implicitly_wait(30)
 
