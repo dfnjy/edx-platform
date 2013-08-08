@@ -11,6 +11,7 @@ from logging import getLogger
 from django.core.management import call_command
 from django.conf import settings
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 # Let the LMS and CMS do their one-time setup
 # For example, setting up mongo caches
@@ -47,7 +48,11 @@ def initial_setup(server):
     """
     Launch the browser once before executing the tests.
     """
-    browser_driver = getattr(settings, 'LETTUCE_BROWSER', 'chrome')
+    # browser_driver = getattr(settings, 'LETTUCE_BROWSER', 'chrome')
+    desired_capabilities =  DesiredCapabilities.CHROME
+    desired_capabilities['platform'] = "Linux"
+    desired_capabilities['version'] = ""
+    desired_capabilities['name'] = "lettuce acceptance test"
 
     # There is an issue with ChromeDriver2 r195627 on Ubuntu
     # in which we sometimes get an invalid browser session.
@@ -57,7 +62,13 @@ def initial_setup(server):
     while (not success) and num_attempts < MAX_VALID_BROWSER_ATTEMPTS:
 
         # Get a browser session
-        world.browser = Browser(browser_driver)
+        # world.browser = Browser(browser_driver)
+        world.browser = Browser(
+            'remote',
+            desired_capabilities=desired_capabilities,
+            url="http://<user>:<access_key>@ondemand.saucelabs.com:80/wd/hub"
+        )
+        world.browser.driver.implicitly_wait(30)
 
         # Try to visit the main page
         # If the browser session is invalid, this will
@@ -78,7 +89,7 @@ def initial_setup(server):
         raise IOError("Could not acquire valid {driver} browser session.".format(driver=browser_driver))
 
     # Set the browser size to 1280x1024
-    world.browser.driver.set_window_size(1280, 1024)
+    # world.browser.driver.set_window_size(1280, 1024)
 
 
 @before.each_scenario
