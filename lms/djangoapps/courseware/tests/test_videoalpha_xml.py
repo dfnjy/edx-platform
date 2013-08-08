@@ -106,8 +106,8 @@ class VideoAlphaModuleUnitTest(unittest.TestCase):
             {'position': 0})
 
 
-class VideoModuleLogicTest(LogicTest):
-    """Tests for logic of Video Xmodule."""
+class VideoAlphaModuleLogicTest(LogicTest):
+    """Tests for logic of VideoAlpha Xmodule."""
 
     descriptor_class = VideoAlphaDescriptor
 
