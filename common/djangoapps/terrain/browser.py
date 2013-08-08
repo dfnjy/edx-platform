@@ -42,22 +42,45 @@ LOGGER.info("Loading the lettuce acceptance testing terrain file...")
 
 MAX_VALID_BROWSER_ATTEMPTS = 20
 
+# https://gist.github.com/santiycr/1644439
+import httplib
+import base64
+try:
+    import json
+except ImportError:
+    import simplejson as json
+
+config = {"username": "<UserName>",
+"access-key": "<AccessID>"}
+desired_capabilities =  DesiredCapabilities.CHROME
+desired_capabilities['platform'] = "Linux"
+desired_capabilities['version'] = ""
+desired_capabilities['name'] = "Fail Test"
+desired_capabilities['passed'] = True
+desired_capabilities['video-upload-on-pass'] = False
+desired_capabilities['record-screenshots'] = False
+desired_capabilities['selenium-version'] = "2.33.0"
+desired_capabilities['max-duration'] = 3600
+jobid=''
+
+base64string = base64.encodestring('%s:%s' % (config['username'], config['access-key']))[:-1]
+
+def set_test_status(jobid, passed=True):
+    body_content = json.dumps({"passed": passed})
+    connection = httplib.HTTPConnection("saucelabs.com")
+    connection.request('PUT', '/rest/v1/%s/jobs/%s' % (config['username'], jobid),
+    body_content,
+    headers={"Authorization": "Basic %s" % base64string})
+    result = connection.getresponse()
+    return result.status == 200
+
 
 @before.harvest
 def initial_setup(server):
     """
     Launch the browser once before executing the tests.
     """
-    # browser_driver = getattr(settings, 'LETTUCE_BROWSER', 'chrome')
-    desired_capabilities =  DesiredCapabilities.CHROME
-    desired_capabilities['platform'] = "Linux"
-    desired_capabilities['version'] = ""
-    desired_capabilities['name'] = "lettuce acceptance test"
-    desired_capabilities['passed'] = True
-    desired_capabilities['video-upload-on-pass'] = False
-    desired_capabilities['record-screenshots'] = False
-    desired_capabilities['selenium-version'] = "2.33.0"
-    desired_capabilities['max-duration'] = 3600
+    #browser_driver = getattr(settings, 'LETTUCE_BROWSER', 'chrome')
 
     # There is an issue with ChromeDriver2 r195627 on Ubuntu
     # in which we sometimes get an invalid browser session.
@@ -70,11 +93,12 @@ def initial_setup(server):
         # world.browser = Browser(browser_driver)
         world.browser = Browser(
             'remote',
-            url="http://<user>:<access_key>@ondemand.saucelabs.com:80/wd/hub",
+            url="http://{}:{}@ondemand.saucelabs.com:80/wd/hub".format(config['username'],config['access-key']),
             **desired_capabilities
         )
         world.browser.driver.implicitly_wait(30)
-
+        global jobid
+        jobid = world.browser.driver.session_id
         # Try to visit the main page
         # If the browser session is invalid, this will
         # raise a WebDriverException
@@ -91,7 +115,7 @@ def initial_setup(server):
     # If we were unable to get a valid session within the limit of attempts,
     # then we cannot run the tests.
     if not success:
-        raise IOError("Could not acquire valid {driver} browser session.".format(driver=browser_driver))
+        raise IOError("Could not acquire valid {driver} browser session.".format(driver='remote'))
 
     # Set the browser size to 1280x1024
     # world.browser.driver.set_window_size(1280, 1024)
@@ -144,4 +168,6 @@ def teardown_browser(total):
     """
     Quit the browser after executing the tests.
     """
+    if total.scenarios_ran != total.scenarios_passed:
+        set_test_status(jobid, False)
     world.browser.quit()
