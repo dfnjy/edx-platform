@@ -142,6 +142,9 @@ xdescribe 'Sequence', ->
     it 'call render on the next sequence', ->
       expect($('#seq_content').html()).toEqual 'Sample Problem'
 
+    it 'scrolls to the top of the page', ->
+      expect($.fn.scrollTo).toHaveBeenCalled()
+
   describe 'previous', ->
     beforeEach ->
       jasmine.stubRequests()
@@ -153,6 +156,9 @@ xdescribe 'Sequence', ->
 
     it 'call render on the previous sequence', ->
       expect($('#seq_content').html()).toEqual 'Video 1'
+
+    it 'scrolls to the top of the page', ->
+      expect($.fn.scrollTo).toHaveBeenCalled()
 
   describe 'link_for', ->
     it 'return a link for specific position', ->
