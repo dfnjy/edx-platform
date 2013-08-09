@@ -773,6 +773,9 @@ INSTALLED_APPS = (
 
     # Notification preferences setting
     'notification_prefs',
+
+    # Student Identity Verification
+    'verify_student',
 )
 
 ######################### MARKETING SITE ###############################
