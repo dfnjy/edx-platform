@@ -87,5 +87,5 @@ def xml_only_video(step):
 @step('The correct Youtube video is shown')
 def the_youtube_video_is_shown(_step):
     ele = world.css_find('.video').first
-    assert ele['data-youtube-id-1-0'] == world.scenario_dict['YOUTUBE_ID']
+    assert ele['data-streams'].split(':')[1] == world.scenario_dict['YOUTUBE_ID']
 
