@@ -136,14 +136,13 @@ class ContentStoreToyCourseTest(ModuleStoreTestCase):
     def test_advanced_components_in_edit_unit(self):
         # This could be made better, but for now let's just assert that we see the advanced modules mentioned in the page
         # response HTML
-        self.check_components_on_page(ADVANCED_COMPONENT_TYPES, ['Video Alpha',
-                                                                 'Word cloud',
+        self.check_components_on_page(ADVANCED_COMPONENT_TYPES, ['Word cloud',
                                                                  'Annotation',
                                                                  'Open Response Assessment',
                                                                  'Peer Grading Interface'])
 
     def test_advanced_components_require_two_clicks(self):
-        self.check_components_on_page(['video'], ['Video'])
+        self.check_components_on_page(['word_cloud'], ['Word cloud'])
 
     def test_malformed_edit_unit_request(self):
         store = modulestore('direct')
