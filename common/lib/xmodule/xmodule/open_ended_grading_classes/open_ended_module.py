@@ -220,7 +220,6 @@ class OpenEndedModule(openendedchild.OpenEndedChild):
 
         # Prepare xqueue request
         #------------------------------------------------------------
-
         xqueue = system.get('xqueue')
         if xqueue is None:
             return False
