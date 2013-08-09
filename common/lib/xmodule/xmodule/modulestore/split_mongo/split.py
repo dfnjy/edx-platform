@@ -615,8 +615,8 @@ class SplitMongoModuleStore(ModuleStoreBase):
         a pointer to the existing definition to which this block should point or from which this was derived.
         If fields does not contain any Scope.content, then definition_locator must have a value meaning that this
         block points
-        to the existing definition. If fields contains Scope.content and definition_location is not None, then
-        new_def_data is assumed to be a new payload for definition_location.
+        to the existing definition. If fields contains Scope.content and definition_locator is not None, then
+        the Scope.content fields are assumed to be a new payload for definition_locator.
 
         Creates a new version of the course structure, creates and inserts the new block, makes the block point
         to the definition which may be new or a new version of an existing or an existing.
@@ -716,7 +716,7 @@ class SplitMongoModuleStore(ModuleStoreBase):
 
         versions_dict: the starting version ids where the keys are the tags such as 'draft' and 'published'
         and the values are structure guids. If provided, the new course will reuse this version (unless you also
-        provide any overrides such as metadata, see above). if not provided, will create a mostly empty course
+        provide any fields overrides, see above). if not provided, will create a mostly empty course
         structure with just a category course root xblock.
         """
         partitioned_fields = self._partition_fields_by_scope('course', fields)
@@ -829,7 +829,7 @@ class SplitMongoModuleStore(ModuleStoreBase):
         index_entry = self._get_index_if_valid(descriptor.location, force)
 
         descriptor.definition_locator, is_updated = self.update_definition_from_data(
-            descriptor.definition_locator, descriptor.get_set_fields_by_scope(Scope.content), user_id)
+            descriptor.definition_locator, descriptor.get_explicitly_set_fields_by_scope(Scope.content), user_id)
         # check children
         original_entry = original_structure['blocks'][descriptor.location.usage_id]
         if (not is_updated and descriptor.has_children
@@ -838,7 +838,7 @@ class SplitMongoModuleStore(ModuleStoreBase):
         # check metadata
         if not is_updated:
             is_updated = self._compare_settings(
-                descriptor.get_set_fields_by_scope(Scope.settings),
+                descriptor.get_explicitly_set_fields_by_scope(Scope.settings),
                 original_entry['fields']
             )
 
@@ -848,7 +848,7 @@ class SplitMongoModuleStore(ModuleStoreBase):
             block_data = new_structure['blocks'][descriptor.location.usage_id]
 
             block_data["definition"] = descriptor.definition_locator.definition_id
-            block_data["fields"] = descriptor.get_set_fields_by_scope(Scope.settings)
+            block_data["fields"] = descriptor.get_explicitly_set_fields_by_scope(Scope.settings)
             if descriptor.has_children:
                 block_data['fields']["children"] = [self._usage_id(child) for child in descriptor.children]
 
@@ -914,7 +914,7 @@ class SplitMongoModuleStore(ModuleStoreBase):
 
     def _persist_subdag(self, xblock, user_id, structure_blocks):
         # persist the definition if persisted != passed
-        new_def_data = self._filter_special_fields(xblock.get_set_fields_by_scope(Scope.content))
+        new_def_data = self._filter_special_fields(xblock.get_explicitly_set_fields_by_scope(Scope.content))
         if (xblock.definition_locator is None or xblock.definition_locator.definition_id is None):
             xblock.definition_locator = self.create_definition_from_data(
                 new_def_data, xblock.category, user_id)
@@ -947,7 +947,7 @@ class SplitMongoModuleStore(ModuleStoreBase):
                     children.append(child)
 
         is_updated = is_updated or updated_blocks
-        block_fields = xblock.get_set_fields_by_scope(Scope.settings)
+        block_fields = xblock.get_explicitly_set_fields_by_scope(Scope.settings)
         if not is_new and not is_updated:
             is_updated = self._compare_settings(block_fields, structure_blocks[usage_id]['fields'])
         if children:
