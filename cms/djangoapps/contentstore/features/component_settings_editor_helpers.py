@@ -26,10 +26,14 @@ def create_component_instance(step, component_button_css, category,
         "Component instance with css {css} was not created successfully".format(css=expected_css))
 
 
-
 @world.absorb
 def click_new_component_button(step, component_button_css):
     step.given('I have clicked the new unit button')
+
+    def xmodule_js_loaded(_driver):
+        return world.browser.evaluate_script("window.XModule") is not None
+    world.wait_for(xmodule_js_loaded)
+
     world.css_click(component_button_css)
 
 
@@ -121,6 +125,7 @@ def get_setting_entry(label):
                 return setting
         return None
     return world.retry_on_exception(get_setting)
+
 
 @world.absorb
 def get_setting_entry_index(label):

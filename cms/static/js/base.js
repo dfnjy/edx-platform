@@ -188,11 +188,6 @@ function linkNewWindow(e) {
     e.preventDefault();
 }
 
-// On AWS instances, base.js gets wrapped in a separate scope as part of Django static
-// pipelining (note, this doesn't happen on local runtimes). So if we set it on window,
-// when we can access it from other scopes (namely the checklists)
-window.cmsLinkNewWindow = linkNewWindow;
-
 function toggleSections(e) {
     e.preventDefault();
 

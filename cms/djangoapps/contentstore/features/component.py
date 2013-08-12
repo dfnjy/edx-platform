@@ -7,6 +7,10 @@ from nose.tools import assert_true
 DATA_LOCATION = 'i4x://edx/templates'
 
 
+def xmodule_js_loaded(_driver):
+    return world.browser.evaluate_script("window.XModule") is not None
+
+
 @step(u'I am editing a new unit')
 def add_unit(step):
     css_selectors = ['a.new-courseware-section-button', 'input.new-section-name-save', 'a.new-subsection-item',
@@ -17,6 +21,7 @@ def add_unit(step):
 
 @step(u'I add the following components:')
 def add_components(step):
+    world.wait_for(xmodule_js_loaded)
     for component in [step_hash['Component'] for step_hash in step.hashes]:
         assert component in COMPONENT_DICTIONARY
         for css in COMPONENT_DICTIONARY[component]['steps']:

@@ -5,7 +5,7 @@ define(["backbone", "underscore", "jquery"], function(Backbone, _, $) {
         events : {
             'click .course-checklist .checklist-title' : "toggleChecklist",
             'click .course-checklist .task input' : "toggleTask",
-            'click a[rel="external"]' : window.cmsLinkNewWindow
+            'click a[rel="external"]' : "popup"
         },
 
         initialize : function() {
@@ -83,6 +83,10 @@ define(["backbone", "underscore", "jquery"], function(Backbone, _, $) {
                         });
                     }
                 });
+        },
+        popup: function(e) {
+            e.preventDefault();
+            window.open($(e.target).attr('href'));
         }
     });
     return ChecklistView;
