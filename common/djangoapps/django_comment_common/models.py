@@ -19,6 +19,13 @@ FORUM_ROLE_STUDENT = 'Student'
 
 @receiver(post_save, sender=CourseEnrollment)
 def assign_default_role(sender, instance, **kwargs):
+    # We've unenrolled the student, so remove all roles for this course
+    if not instance.is_active:
+        course_roles = list(Role.objects.filter(course_id=instance.course_id))
+        instance.user.roles.remove(*course_roles)
+        return
+
+    # We've enrolled the student, so make sure they have a default role
     if instance.user.is_staff:
         role = Role.objects.get_or_create(course_id=instance.course_id, name="Moderator")[0]
     else:
