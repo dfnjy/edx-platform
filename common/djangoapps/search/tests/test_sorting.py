@@ -1,14 +1,22 @@
+"""
+Test suite for various sorting methods in sorting.sort
+"""
+
 import search.sorting as sorting
 from django.test import TestCase
 
+
 class SortingTest(TestCase):
+    """
+    This contains all of the current sorting tests.
+    """
 
     def test_alphabetical_sort(self):
         test_list = ["One", "Two", "3.three", "four", "Five"]
         dummy_results = [DummyResult(name, 0.0) for name in test_list]
         sorted_list = sorting.sort(dummy_results, "alphabetical")
         sorted_results = [result.data["display_name"] for result in sorted_list]
-        self.assertEqual(sorted_results, ['3.three','Five', 'four', "One", 'Two'])
+        self.assertEqual(sorted_results, ['3.three', 'Five', 'four', "One", 'Two'])
 
     def test_score_sort(self):
         test_scores = [10, 1.1, 48391023, 32.123678, 2939.3434, 0.0]
@@ -19,7 +27,11 @@ class SortingTest(TestCase):
         unsorted_list = sorting.sort(dummy_results, "fake")
         self.assertEqual(test_scores, [item.score for item in unsorted_list])
 
+
 class DummyResult():
+    """
+    This generates a minimal fake result to test current active sort methods
+    """
 
     def __init__(self, display_name, score):
         self.score = score

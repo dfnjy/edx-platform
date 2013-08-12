@@ -42,29 +42,31 @@ def index_course(request):
 
     Is called via AJAX from Studio, and doesn't render any templates.
     """
-    indexer = MongoIndexer()
+
+    indexer = MongoIndexer("localhost", 27017)
     if "course" in request.POST:
-        indexer.index_course(request.POST["type_id"])
+        indexer.index_course(request.POST["course"])
         return HttpResponse(status=204)
     else:
         return HttpResponseBadRequest()
 
 
-def _find(request, course_id):
+def _find(request, course_id, test_url=None):
     """
     Method in charge of getting search results and associated metadata
     """
-    database = settings.ES_DATABASE
+
+    database = test_url or settings.ES_DATABASE
     full_query_data = {}
     query = request.GET.get("s", "*.*")
     full_query_data.update(
         {
-            "query":{
-                "query_string":{
+            "query": {
+                "query_string": {
                     "default_field": "searchable_text",
                     "query": query,
                     "analyzer": "standard"
-                 },
+                },
             },
             "size": "1000"
         }
@@ -88,7 +90,7 @@ def _find(request, course_id):
     log.debug(response.content)
     data = SearchResults(response, **request.GET)
     data.filter_and_sort()
-    context.update({"results": len(data) > 0})
+    context.update({"results": len(data.entries) > 0})
     context.update({
         "data": data,
         "old_query": query

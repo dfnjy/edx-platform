@@ -12,6 +12,7 @@ from xmodule.modulestore import Location
 
 import nltk
 
+
 class SearchResults:
     """
     This is a collection of all search results to a query.
@@ -24,6 +25,7 @@ class SearchResults:
         """kwargs should be the GET parameters from the original search request
         filters needs to be a dictionary that maps fields to allowed values"""
         raw_results = json.loads(response.content).get("hits", {"hits": ""})["hits"]
+        print raw_results
         scores = [entry["_score"] for entry in raw_results]
         self.sort = kwargs.get("sort", None)
         raw_data = [entry["_source"] for entry in raw_results]
@@ -71,50 +73,6 @@ class SearchResults:
             full_results |= self.filter(field, value)
         self.entries = list(full_results)
         self.sort_results()
-
-    def __len__(self):
-        """
-        Implementation of len method standard to Containers
-
-        It's useful to treat SearchResults as a Container in views from a usability perspective,
-        so this class implements the standard gambit of Container methods
-        """
-
-        return len(self.entries)
-
-    def __delitem__(self, i):
-        """
-        Deletes SearchResult at indicated index
-        """
-
-        del self.entries[i]
-
-    def __getitem__(self, i):
-        """
-        Returns SearchResult at indicated index
-        """
-
-        return self.entries[i]
-
-    def __setitem__(self, i, value):
-        """
-        Sets the SearchResult at indicated index to the specified value
-
-        Value can be passed in either as a SearchResult, a list/tuple of values
-        order as entry, score, query, or a dictionary with values for the keys
-        entry, score, and query.
-        """
-
-        if isinstance(value, SearchResult):
-            self.entries[i] = value
-        elif isinstance(value, list):
-            new_result = SearchResult(*value)
-            self.entries[i] = new_result
-        elif isinstance(value, dict):
-            new_result = SearchResult(**value)
-            self.entries[i] = new_result
-        else:
-            raise ValueError
 
 
 class SearchResult:
@@ -193,13 +151,18 @@ def _match(words):
     near_size = lambda words: abs(len(words[0]) - len(words[1])) < (len(words[0]) + len(words[1])) / 6
     return contained(words) and near_size(words)
 
-def _match_highlighter(query, response, tag="b", css_class="highlight", highlight_stopwords=True):
+
+def _match_highlighter(query, response, tag="b", css_class="highlight"):
     """
     Highlights all direct matches within given snippet
     """
 
     wrapping = ("<" + tag + " class=" + css_class + ">", "</" + tag + ">")
-    depunctuation = lambda word: word.translate(None, string.punctuation)
+    if isinstance(response, unicode):
+        punctuation_map = {ord(char): None for char in string.punctuation}
+        depunctuation = lambda word: word.translate(punctuation_map)
+    else:
+        depunctuation = lambda word: word.translate(None, string.punctuation)
     wrap = lambda text: wrapping[0] + text + wrapping[1]
     query_set = set(word.lower() for word in query.split())
     bold_response = ""

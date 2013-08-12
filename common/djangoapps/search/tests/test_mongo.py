@@ -5,9 +5,7 @@ Test suite for the MongoIndexer class in es_requests
 from search.es_requests import MongoIndexer
 from django.test import TestCase
 from pymongo import MongoClient
-import random
-import string
-from pyfuzz.generator import random_item, random_ascii
+from pyfuzz.generator import random_item, random_ascii, random_regex
 import json
 from StringIO import StringIO
 import ho.pisa as pisa
@@ -77,18 +75,18 @@ class MongoTest(TestCase):
 
     def test_pdf_to_text(self):
         pseudo_file = StringIO()
-        pdf = pisa.CreatePDF("This is a test", pseudo_file)
+        pisa.CreatePDF("This is a test", pseudo_file)
         test = {"data": pseudo_file.getvalue()}
         test.update({"files_id": {"name": "testPdf"}})
         value = self.indexer.pdf_to_text(test)
         self.assertEquals(value.strip(), "This is a test")
 
-        bad_test = {"data": "fake", "files_id": {"name":"testCase"}}
+        bad_test = {"data": "fake", "files_id": {"name": "testCase"}}
         self.assertEquals(self.indexer.pdf_to_text(bad_test), "")
 
     def test_problem_text(self):
         test_text = "<p>This is a test</p><text>and so is <a href='test.com'></a>this</text>"
-        document = {"definition":{"data": test_text}}
+        document = {"definition": {"data": test_text}}
         check = self.indexer.searchable_text_from_problem_data(document)
         self.assertEquals(check, "This is a test and so is this")
 
@@ -149,6 +147,52 @@ class MongoTest(TestCase):
         self.chunk_collection.insert(test_document)
         transcript = self.indexer.get_searchable_text(video_module, "transcript").encode("utf-8", "ignore")
         self.assertEquals(transcript.replace(" ", ""), test_transcript["text"].replace(" ", ""))
+
+    def test_basic_dict(self):
+        document = dummy_document("_id", ["org", "course"], "regex", regex="[a-zA-Z0-9]", length=50)
+        asset_string = "/asset/" + random_item("regex", regex="[a-zA-Z0-9]", length=50) + ".pdf"
+        document.update({"definition": {"data": asset_string}})
+        document.update({"metadata": {"display_name": random_regex(regex="[a-zA-Z0-9]", length=50)}})
+        course_document = {"_id": {"category": "course", "course": document["_id"]["course"], "name": "test_course"}}
+        self.module_collection.insert(course_document)
+        basic_dictionary = self.indexer.basic_dict(document, "pdf")
+        self.assertTrue(document["metadata"]["display_name"] in basic_dictionary["display_name"])
+        self.assertTrue(document["_id"]["course"] in basic_dictionary["display_name"])
+        self.assertTrue(basic_dictionary["searchable_text"] == "")
+        self.assertTrue(basic_dictionary["thumbnail"] == "")
+
+    def test_bulk_index_item(self):
+        data = {"type_hash": "test type hash", "hash": "test hash"}
+        bulk_index = self.indexer.bulk_index_item("test-index", data)
+        action = json.loads(bulk_index.split("\n")[0])
+        self.assertEquals(action["index"]["_index"], "test-index")
+        self.assertEquals(action["index"]["_type"], "test type hash")
+
+    def test_index_course_problem(self):
+        document = dummy_document("_id", ["org"], "regex", regex="[a-zA-Z0-9]", length=50)
+        document["_id"].update({"category": "problem", "course": "test-course"})
+        asset_string = "<p>Test</p>"
+        document.update({"definition": {"data": asset_string}})
+        self.module_collection.insert(document)
+        course_document = {"_id": {"category": "course", "course": document["_id"]["course"], "name": "test_course"}}
+        self.module_collection.insert(course_document)
+        check = self.indexer.index_course("test-course")
+        return_dict = json.loads(check)
+        self.assertEquals(return_dict["ok"], True)
+        self.assertEquals(return_dict["_index"], "problem-index")
+
+    def test_index_course_pdf(self):
+        document = dummy_document("_id", ["org"], "regex", regex="[a-zA-Z0-9]", length=50)
+        document["_id"].update({"category": "html", "course": "test-course"})
+        random_asset_name = random_item("regex", regex="[a-zA-Z0-9]", length=50)
+        asset_string = "/asset/%s.pdf" % random_asset_name
+        document.update({"definition": {"data": asset_string}})
+        self.module_collection.insert(document)
+
+        course_document = {"_id": {"category": "course", "course": document["_id"]["course"], "name": "test_course"}}
+        self.module_collection.insert(course_document)
+        check = self.indexer.index_course("test-course")
+        self.assertEquals(check, None)
 
     def tearDown(self):
         self.test_content.drop_collection("fs.chunks")

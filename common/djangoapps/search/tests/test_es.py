@@ -8,6 +8,7 @@ from search.es_requests import ElasticDatabase, flaky_request
 import json
 import time
 import os
+from pyfuzz.generator import random_regex
 
 
 class EsTest(TestCase):
@@ -49,20 +50,18 @@ class EsTest(TestCase):
         success = self.elastic_search.bulk_index(test_string)
         self.assertEqual(success.status_code, 200)
 
+    def test_index_data(self):
+        fake_data = {"data": "Test String"}
+        self.assertTrue(self.elastic_search.index_data("test-index", fake_data) is None)
+        fake_data.update({"hash": random_regex(regex="[a-zA-Z0-9]", length=50)})
+        self.assertTrue(self.elastic_search.index_data("test-index", fake_data) is None)
+        fake_data.update({"type_hash": random_regex(regex="[a-zA-Z0-9]", length=50)})
+        response = self.elastic_search.index_data("test-index", fake_data)
+        self.assertEqual(response.status_code, 201)
+
     def tearDown(self):
         self.elastic_search.delete_index("test-index")
 
-def has_index(url, index):
-    """
-    Checks to see if the Elastic Search instance contains the given index,
-    """
-
-    full_url = "/".join([url, index])
-    response = flaky_request("head", full_url)
-    if response:
-        return response.status_code == 200
-    else:
-        return False
 
 def has_type(url, index, type_):
     """

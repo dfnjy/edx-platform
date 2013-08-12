@@ -90,21 +90,6 @@ class ElasticDatabase:
         with open(settings_file) as source:
             self.index_settings = json.load(source)
 
-    def setup_type(self, index, type_, json_mapping):
-        """
-        Instantiates a type within the Elastic Search instance
-
-        json_mapping should be a dictionary starting at the properties level of a mapping.
-
-        The type level will be added, so if you include it things will break. The purpose of this
-        is to encourage loose coupling between types and mappings for better code
-        """
-
-        full_url = "/".join([self.url, index, type_]) + "/"
-        with open(json_mapping) as source:
-            dictionary = json.load(source)
-        return flaky_request("post", full_url, data=json.dumps(dictionary))
-
     def index_data(self, index, data, type_=None, id_=None):
         """
         Actually indexes given data at the indicated type and id.
@@ -150,6 +135,7 @@ class ElasticDatabase:
 
         full_url = "/".join([self.url, index])
         return flaky_request("delete", full_url)
+
 
 class MongoIndexer:
     """
@@ -419,14 +405,13 @@ class MongoIndexer:
         return_string += json.dumps({"index": {"_index": index, "_type": data["type_hash"], "_id": data["hash"]}})
         return_string += "\n"
         return_string += json.dumps(data)
-        return_string = "\n"
+        return_string += "\n"
         return return_string
 
     def index_course(self, course):
         """
         Indexes all of the searchable content for a course
         """
-
         cursor = self.find_modules_for_course(course)
         for _ in range(cursor.count()):
             item = cursor.next()
@@ -449,4 +434,4 @@ class MongoIndexer:
             else:
                 continue
             if filter(None, data.values()) == data.values():
-                log.debug(self.es_instance.index_data(index, item["_id"]["course"], data, data["hash"]).content)
+                return self.es_instance.index_data(index, data, data["hash"], data["type_hash"]).content
