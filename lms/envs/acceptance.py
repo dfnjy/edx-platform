@@ -82,6 +82,8 @@ MITX_FEATURES['ENABLE_DISCUSSION_SERVICE'] = True
 # Use the auto_auth workflow for creating users and logging them in
 MITX_FEATURES['AUTOMATIC_AUTH_FOR_TESTING'] = True
 
+MITX_FEATURES['USE_SAUCE'] = False
+
 # Include the lettuce app for acceptance testing, including the 'harvest' django-admin command
 INSTALLED_APPS += ('lettuce.django',)
 LETTUCE_APPS = ('courseware',)
