@@ -57,11 +57,11 @@ config = {"username": "<USERNAME>",
 desired_capabilities =  DesiredCapabilities.CHROME
 desired_capabilities['platform'] = "Linux"
 desired_capabilities['version'] = ""
-desired_capabilities['name'] = "LMS Lettuce Test"
+desired_capabilities['name'] = "CMS Lettuce Test"
 desired_capabilities['build'] = datetime.datetime.now(UTC).isoformat(' ')
 desired_capabilities['passed'] = True
 desired_capabilities['video-upload-on-pass'] = False
-desired_capabilities['sauce-advisor'] = True
+desired_capabilities['sauce-advisor'] = False
 desired_capabilities['record-screenshots'] = False
 desired_capabilities['selenium-version'] = "2.33.0"
 desired_capabilities['max-duration'] = 3600
@@ -95,7 +95,7 @@ def initial_setup(server):
     while (not success) and num_attempts < MAX_VALID_BROWSER_ATTEMPTS:
 
         # Get a browser session
-        if 'USE_SAUCE' in settings.MITX_FEATURES and settings.MITX_FEATURES['USE_SAUCE']:
+        if settings.MITX_FEATURES.get('USE_SAUCE'):
             world.browser = Browser(
                 'remote',
                 url="http://{}:{}@ondemand.saucelabs.com:80/wd/hub".format(config['username'],config['access-key']),
@@ -126,7 +126,7 @@ def initial_setup(server):
         raise IOError("Could not acquire valid {driver} browser session.".format(driver='remote'))
 
     # Set the browser size to 1280x1024
-    if not ('USE_SAUCE' in settings.MITX_FEATURES and settings.MITX_FEATURES['USE_SAUCE']):
+    if not settings.MITX_FEATURES.get('USE_SAUCE'):
         world.browser.driver.set_window_size(1280, 1024)
 
 
@@ -177,6 +177,6 @@ def teardown_browser(total):
     """
     Quit the browser after executing the tests.
     """
-    if ('USE_SAUCE' in settings.MITX_FEATURES and settings.MITX_FEATURES['USE_SAUCE']) and total.scenarios_ran != total.scenarios_passed:
+    if settings.MITX_FEATURES.get('USE_SAUCE') and total.scenarios_ran != total.scenarios_passed:
         set_test_status(jobid, False)
     world.browser.quit()
