@@ -6,13 +6,15 @@
 
 <%block name="jsextra">
   <script type='text/javascript'>
-    new CMS.Views.TabsEdit({
+require(["coffee/src/views/tabs", "coffee/src/models/module"], function(TabsEditView, ModuleModel) {
+    new TabsEditView({
       el: $('.main-wrapper'),
-      model: new CMS.Models.Module({
+      model: new ModuleModel({
         id: '${context_course.location}'
       }),
       mast: $('.wrapper-mast')
     });
+});
   </script>
 </%block>
 

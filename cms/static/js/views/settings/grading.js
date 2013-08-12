@@ -1,6 +1,7 @@
-if (!CMS.Views['Settings']) CMS.Views.Settings = {}; // ensure the pseudo pkg exists
+define(["js/views/validation", "underscore", "jquery", "js/views/settings/grader"],
+    function(ValidatingView, _, $, GraderView) {
 
-CMS.Views.Settings.Grading = CMS.Views.ValidatingView.extend({
+var GradingView = ValidatingView.extend({
     // Model class is CMS.Models.Settings.CourseGradingPolicy
     events : {
         "input input" : "updateModel",
@@ -30,21 +31,15 @@ CMS.Views.Settings.Grading = CMS.Views.ValidatingView.extend({
 
         // Instrument grace period
         this.$el.find('#course-grading-graceperiod').timepicker();
+        this.template = _.template($("#course_grade_policy-tpl").text());
 
         // instantiates an editor template for each update in the collection
-        // Because this calls render, put it after everything which render may depend upon to prevent race condition.
-        window.templateLoader.loadRemoteTemplate("course_grade_policy",
-                "/static/client_templates/course_grade_policy.html",
-                function (raw_template) {
-            self.template = _.template(raw_template);
-            self.render();
-        }
-        );
         this.listenTo(this.model, 'invalid', this.handleValidationError);
         this.listenTo(this.model, 'change', this.showNotificationBar);
         this.model.get('graders').on('reset', this.render, this);
         this.model.get('graders').on('add', this.render, this);
         this.selectorToField = _.invert(this.fieldToSelectorMap);
+        this.render();
     },
 
     render: function() {
@@ -77,7 +72,7 @@ CMS.Views.Settings.Grading = CMS.Views.ValidatingView.extend({
         gradeCollection.each(function(gradeModel) {
             $(gradelist).append(self.template({model : gradeModel }));
             var newEle = gradelist.children().last();
-            var newView = new CMS.Views.Settings.GraderView({el: newEle,
+            var newView = new GraderView({el: newEle,
                 model : gradeModel, collection : gradeCollection });
             // Listen in order to rerender when the 'cancel' button is
             // pressed
@@ -345,74 +340,13 @@ CMS.Views.Settings.Grading = CMS.Views.ValidatingView.extend({
     showNotificationBar: function() {
         // We always call showNotificationBar with the same args, just
         // delegate to superclass
-        CMS.Views.ValidatingView.prototype.showNotificationBar.call(this,
-                                                                    this.save_message,
-                                                                    _.bind(this.saveView, this),
-                                                                    _.bind(this.revertView, this));
+        ValidatingView.prototype.showNotificationBar.call(this,
+                                                          this.save_message,
+                                                          _.bind(this.saveView, this),
+                                                          _.bind(this.revertView, this));
     }
 });
 
-CMS.Views.Settings.GraderView = CMS.Views.ValidatingView.extend({
-    // Model class is CMS.Models.Settings.CourseGrader
-    events : {
-        "input input" : "updateModel",
-        "input textarea" : "updateModel",
-        // Leaving change in as fallback for older browsers
-        "change input" : "updateModel",
-        "change textarea" : "updateModel",
-        "click .remove-grading-data" : "deleteModel",
-        // would love to move to a general superclass, but event hashes don't inherit in backbone :-(
-        'focus :input' : "inputFocus",
-        'blur :input' : "inputUnfocus"
-    },
-    initialize : function() {
-        this.listenTo(this.model, 'invalid', this.handleValidationError);
-        this.selectorToField = _.invert(this.fieldToSelectorMap);
-        this.render();
-    },
+return GradingView;
 
-    render: function() {
-        return this;
-    },
-    fieldToSelectorMap : {
-        'type' : 'course-grading-assignment-name',
-        'short_label' : 'course-grading-assignment-shortname',
-        'min_count' : 'course-grading-assignment-totalassignments',
-        'drop_count' : 'course-grading-assignment-droppable',
-        'weight' : 'course-grading-assignment-gradeweight'
-    },
-    updateModel: function(event) {
-        // HACK to fix model sometimes losing its pointer to the collection [I think I fixed this but leaving
-        // this in out of paranoia. If this error ever happens, the user will get a warning that they cannot
-        // give 2 assignments the same name.]
-        if (!this.model.collection) {
-            this.model.collection = this.collection;
-        }
-
-        switch (event.currentTarget.id) {
-        case 'course-grading-assignment-totalassignments':
-            this.$el.find('#course-grading-assignment-droppable').attr('max', $(event.currentTarget).val());
-            this.setField(event);
-            break;
-        case 'course-grading-assignment-name':
-            // Keep the original name, until we save
-            this.oldName = this.oldName === undefined ? this.model.get('type') : this.oldName;
-            // If the name has changed, alert the user to change all subsection names.
-            if (this.setField(event) != this.oldName && !_.isEmpty(this.oldName)) {
-                // overload the error display logic
-                this._cacheValidationErrors.push(event.currentTarget);
-                $(event.currentTarget).parent().append(
-                        this.errorTemplate({message : 'For grading to work, you must change all "' + this.oldName +
-                            '" subsections to "' + this.model.get('type') + '".'}));
-            }
-            break;
-        default:
-            this.setField(event);
-        break;
-        }
-    },
-    deleteModel : function(e) {
-        e.preventDefault();
-        this.collection.remove(this.model);
-    }
-});
+}); // end define()

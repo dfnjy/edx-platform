@@ -13,13 +13,15 @@
   </script>
 % endfor
 
-<script type="text/javascript" src="${static.url('js/template_loader.js')}"></script>
-<script type="text/javascript" src="${static.url('js/views/validating_view.js')}"></script>
-<script type="text/javascript" src="${static.url('js/models/settings/advanced.js')}"></script>
-<script type="text/javascript" src="${static.url('js/views/settings/advanced_view.js')}"></script>
+## <script type="text/javascript" src="${static.url('js/template_loader.js')}"></script>
+## <script type="text/javascript" src="${static.url('js/views/validating_view.js')}"></script>
+## <script type="text/javascript" src="${static.url('js/models/settings/advanced.js')}"></script>
+## <script type="text/javascript" src="${static.url('js/views/settings/advanced_view.js')}"></script>
 
 <script type="text/javascript">
-$(document).ready(function () {
+require(["jquery", "js/models/settings/advanced", "js/views/settings/advanced"],
+        function($, AdvancedSettingsModel, AdvancedSettingsView) {
+  $(document).ready(function () {
 
     $("form :input").focus(function() {
       $("label[for='" + this.id + "']").addClass("is-focused");
@@ -28,16 +30,15 @@ $(document).ready(function () {
     });
 
     // proactively populate advanced b/c it has the filtered list and doesn't really follow the model pattern
-    var advancedModel = new CMS.Models.Settings.Advanced(${advanced_dict | n}, {parse: true});
+    var advancedModel = new AdvancedSettingsModel(${advanced_dict | n}, {parse: true});
     advancedModel.url = "${reverse('course_advanced_settings_updates', kwargs=dict(org=context_course.location.org, course=context_course.location.course, name=context_course.location.name))}";
 
-    var editor = new CMS.Views.Settings.Advanced({
+    var editor = new AdvancedSettingsView({
       el: $('.settings-advanced'),
       model: advancedModel
-      });
-
-editor.render();
-
+    });
+    editor.render();
+  });
 });
 
 </script>

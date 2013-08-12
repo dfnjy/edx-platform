@@ -1,5 +1,3 @@
-<%! from django.utils.translation import ugettext as _ %>
-
 <%inherit file="base.html" />
 <%block name="title">${_("Schedule &amp; Details Settings")}</%block>
 <%block name="bodyclass">is-signedin course schedule settings</%block>
@@ -7,22 +5,22 @@
 <%namespace name='static' file='static_content.html'/>
 <%!
 from contentstore import utils
+from django.utils.translation import ugettext as _
 %>
 
 
 <%block name="jsextra">
   <link rel="stylesheet" type="text/css" href="${static.url('js/vendor/timepicker/jquery.timepicker.css')}" />
-  <script src="${static.url('js/vendor/timepicker/jquery.timepicker.js')}"></script>
-  <script src="${static.url('js/vendor/timepicker/datepair.js')}"></script>
-  <script src="${static.url('js/vendor/date.js')}"></script>
 
-  <script type="text/javascript" src="${static.url('js/template_loader.js')}"></script>
-  <script type="text/javascript" src="${static.url('js/models/course_relative.js')}"></script>
-  <script type="text/javascript" src="${static.url('js/views/validating_view.js')}"></script>
-  <script type="text/javascript" src="${static.url('js/views/settings/main_settings_view.js')}"></script>
-  <script type="text/javascript" src="${static.url('js/models/settings/course_details.js')}"></script>
+ ## <script type="text/javascript" src="${static.url('js/template_loader.js')}"></script>
+ ## <script type="text/javascript" src="${static.url('js/models/course_relative.js')}"></script>
+ ## <script type="text/javascript" src="${static.url('js/views/validating_view.js')}"></script>
+ ## <script type="text/javascript" src="${static.url('js/views/settings/main_settings_view.js')}"></script>
+ ## <script type="text/javascript" src="${static.url('js/models/settings/course_details.js')}"></script>
 
   <script type="text/javascript">
+require(["jquery", "js/models/settings/course_details", "js/views/settings/main"],
+  function($, CourseDetailsModel, MainView) {
     $(document).ready(function(){
 
       // hilighting labels when fields are focused in
@@ -31,11 +29,11 @@ from contentstore import utils
       }).blur(function() {
         $("label").removeClass("is-focused");
         });
-      var model = new CMS.Models.Settings.CourseDetails();
+      var model = new CourseDetailsModel();
       model.urlRoot = '${details_url}';
       model.fetch({
         success: function(model) {
-          var editor = new CMS.Views.Settings.Details({
+          var editor = new MainView({
               el: $('.settings-details'),
               model: model
           });
@@ -44,6 +42,7 @@ from contentstore import utils
         reset: true
       });
     });
+});
 
   </script>
 </%block>

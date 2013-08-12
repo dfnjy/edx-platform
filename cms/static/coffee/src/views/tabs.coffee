@@ -1,83 +1,84 @@
-class CMS.Views.TabsEdit extends Backbone.View
+define ["jquery", "jquery.ui", "backbone", "coffee/src/models/module", "coffee/src/views/module_edit"],
+($, ui, Backbone, ModuleModel, ModuleEditView) ->
 
-  initialize: =>
-    @$('.component').each((idx, element) =>
-        new CMS.Views.ModuleEdit(
-            el: element,
-            onDelete: @deleteTab,
-            model: new CMS.Models.Module(
-                id: $(element).data('id'),
-            )
-        )
-    )
+  class TabsEdit extends Backbone.View
 
-    @options.mast.find('.new-tab').on('click', @addNewTab)
-    @$('.components').sortable(
-      handle: '.drag-handle'
-      update: @tabMoved
-      helper: 'clone'
-      opacity: '0.5'
-      placeholder: 'component-placeholder'
-      forcePlaceholderSize: true
-      axis: 'y'
-      items: '> .component'
-    )    
+    initialize: =>
+      @$('.component').each((idx, element) =>
+          new ModuleEditView(
+              el: element,
+              onDelete: @deleteTab,
+              model: new ModuleModel(
+                  id: $(element).data('id'),
+              )
+          )
+      )
 
-  tabMoved: (event, ui) =>
-    tabs = []
-    @$('.component').each((idx, element) =>
-        tabs.push($(element).data('id'))
-    )
+      @options.mast.find('.new-tab').on('click', @addNewTab)
+      @$('.components').sortable(
+        handle: '.drag-handle'
+        update: @tabMoved
+        helper: 'clone'
+        opacity: '0.5'
+        placeholder: 'component-placeholder'
+        forcePlaceholderSize: true
+        axis: 'y'
+        items: '> .component'
+      )
 
-    analytics.track "Reordered Static Pages",
-      course: course_location_analytics
+    tabMoved: (event, ui) =>
+      tabs = []
+      @$('.component').each((idx, element) =>
+          tabs.push($(element).data('id'))
+      )
 
-    $.ajax({
-      type:'POST',
-      url: '/reorder_static_tabs', 
-      data: JSON.stringify({
-        tabs : tabs
-      }),
-      contentType: 'application/json'
-    })
+      analytics.track "Reordered Static Pages",
+        course: course_location_analytics
 
-  addNewTab: (event) =>
-    event.preventDefault()
+      $.ajax({
+        type:'POST',
+        url: '/reorder_static_tabs',
+        data: JSON.stringify({
+          tabs : tabs
+        }),
+        contentType: 'application/json'
+      })
 
-    editor = new CMS.Views.ModuleEdit(
-      onDelete: @deleteTab
-      model: new CMS.Models.Module()
-    )
+    addNewTab: (event) =>
+      event.preventDefault()
 
-    $('.new-component-item').before(editor.$el)
-    editor.$el.addClass('new')
-    setTimeout(=>
-      editor.$el.removeClass('new')
-    , 500)
+      editor = new ModuleEditView(
+        onDelete: @deleteTab
+        model: new ModuleModel()
+      )
 
-    editor.createItem(
-      @model.get('id'),
-      {category: 'static_tab'}
-    )
+      $('.new-component-item').before(editor.$el)
+      editor.$el.addClass('new')
+      setTimeout(=>
+        editor.$el.removeClass('new')
+      , 500)
 
-    analytics.track "Added Static Page",
-      course: course_location_analytics
+      editor.createItem(
+        @model.get('id'),
+        {category: 'static_tab'}
+      )
 
-  deleteTab: (event) =>
-    if not confirm 'Are you sure you want to delete this component? This action cannot be undone.'
-      return
-    $component = $(event.currentTarget).parents('.component')
+      analytics.track "Added Static Page",
+        course: course_location_analytics
 
-    analytics.track "Deleted Static Page",
-      course: course_location_analytics
-      id: $component.data('id')
+    deleteTab: (event) =>
+      if not confirm 'Are you sure you want to delete this component? This action cannot be undone.'
+        return
+      $component = $(event.currentTarget).parents('.component')
 
-    $.post('/delete_item', {
-      id: $component.data('id')
-    }, =>
-      $component.remove()
-    )
+      analytics.track "Deleted Static Page",
+        course: course_location_analytics
+        id: $component.data('id')
 
+      $.post('/delete_item', {
+        id: $component.data('id')
+      }, =>
+        $component.remove()
+      )
 
-
-
+  return TabsEdit

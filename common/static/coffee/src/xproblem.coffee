@@ -1,47 +1,48 @@
-class XProblemGenerator
-  
-  constructor: (seed, @parameters={}) ->
+require ["jquery", "mersenne"], ($, MersenneTwister) ->
+  class XProblemGenerator
 
-    @random = new MersenneTwister(seed)
+    constructor: (seed, @parameters={}) ->
 
-    @problemState = {}
+      @random = new MersenneTwister(seed)
 
-  generate: () ->
+      @problemState = {}
 
-    console.error("Abstract method called: XProblemGenerator.generate")
+    generate: () ->
 
-class XProblemDisplay
+      console.error("Abstract method called: XProblemGenerator.generate")
 
-  constructor: (@state, @submission, @evaluation, @container, @submissionField, @parameters={}) ->
+  class XProblemDisplay
 
-  render: () ->
+    constructor: (@state, @submission, @evaluation, @container, @submissionField, @parameters={}) ->
 
-    console.error("Abstract method called: XProblemDisplay.render")
+    render: () ->
 
-  updateSubmission: () ->
+      console.error("Abstract method called: XProblemDisplay.render")
 
-    @submissionField.val(JSON.stringify(@getCurrentSubmission()))
+    updateSubmission: () ->
 
-  getCurrentSubmission: () ->
-    console.error("Abstract method called: XProblemDisplay.getCurrentSubmission")
+      @submissionField.val(JSON.stringify(@getCurrentSubmission()))
 
-class XProblemGrader
+    getCurrentSubmission: () ->
+      console.error("Abstract method called: XProblemDisplay.getCurrentSubmission")
 
-  constructor: (@submission, @problemState, @parameters={}) ->
+  class XProblemGrader
 
-    @solution   = null
-    @evaluation = {}
+    constructor: (@submission, @problemState, @parameters={}) ->
 
-  solve: () ->
+      @solution   = null
+      @evaluation = {}
 
-    console.error("Abstract method called: XProblemGrader.solve")
+    solve: () ->
 
-  grade: () ->
+      console.error("Abstract method called: XProblemGrader.solve")
 
-    console.error("Abstract method called: XProblemGrader.grade")
+    grade: () ->
 
-root = exports ? this
+      console.error("Abstract method called: XProblemGrader.grade")
 
-root.XProblemGenerator = XProblemGenerator
-root.XProblemDisplay   = XProblemDisplay
-root.XProblemGrader    = XProblemGrader
+  root = exports ? window
+
+  root.XProblemGenerator = XProblemGenerator
+  root.XProblemDisplay   = XProblemDisplay
+  root.XProblemGrader    = XProblemGrader

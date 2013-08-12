@@ -8,17 +8,25 @@
 from contentstore import utils
 %>
 
+<%block name="header_extras">
+% for template_name in ["course_grade_policy"]:
+  <script type="text/template" id="${template_name}-tpl">
+    <%static:include path="js/${template_name}.underscore" />
+  </script>
+% endfor
+</%block>
+
 <%block name="jsextra">
   <link rel="stylesheet" type="text/css" href="${static.url('js/vendor/timepicker/jquery.timepicker.css')}" />
-  <script src="${static.url('js/vendor/timepicker/jquery.timepicker.js')}"></script>
 
-  <script type="text/javascript" src="${static.url('js/template_loader.js')}"></script>
-  <script type="text/javascript" src="${static.url('js/models/course_relative.js')}"></script>
-  <script type="text/javascript" src="${static.url('js/views/validating_view.js')}"></script>
-  <script type="text/javascript" src="${static.url('js/models/settings/course_grading_policy.js')}"></script>
-  <script type="text/javascript" src="${static.url('js/views/settings/settings_grading_view.js')}"></script>
+##  <script type="text/javascript" src="${static.url('js/template_loader.js')}"></script>
+##  <script type="text/javascript" src="${static.url('js/models/course_relative.js')}"></script>
+##  <script type="text/javascript" src="${static.url('js/views/validating_view.js')}"></script>
+##  <script type="text/javascript" src="${static.url('js/models/settings/course_grading_policy.js')}"></script>
+##  <script type="text/javascript" src="${static.url('js/views/settings/settings_grading_view.js')}"></script>
 
   <script type="text/javascript">
+require(["jquery", "js/views/settings/grading", "js/models/settings/course_grading_policy"], function($, GradingView, CourseGradingPolicyModel) {
     $(document).ready(function(){
 
       $("form :input").focus(function() {
@@ -27,13 +35,14 @@ from contentstore import utils
         $("label").removeClass("is-focused");
       });
 
-      var editor = new CMS.Views.Settings.Grading({
+      var editor = new GradingView({
           el: $('.settings-grading'),
-          model : new CMS.Models.Settings.CourseGradingPolicy(${course_details|n},{parse:true})
+          model : new CourseGradingPolicyModel(${course_details|n},{parse:true})
       });
 
       editor.render();
     });
+});
 
   </script>
 </%block>

@@ -1,6 +1,7 @@
-if (!CMS.Views['Settings']) CMS.Views.Settings = {};
+define(["js/views/validation", "codemirror", "underscore", "jquery", "jquery.ui", "jquery.timepicker"],
+    function(ValidatingView, CodeMirror, _, $, ui) {
 
-CMS.Views.Settings.Details = CMS.Views.ValidatingView.extend({
+var DetailsView = ValidatingView.extend({
     // Model class is CMS.Models.Settings.CourseDetails
     events : {
         "input input" : "updateModel",
@@ -212,10 +213,13 @@ CMS.Views.Settings.Details = CMS.Views.ValidatingView.extend({
     showNotificationBar: function() {
         // We always call showNotificationBar with the same args, just
         // delegate to superclass
-        CMS.Views.ValidatingView.prototype.showNotificationBar.call(this,
-                                                                    this.save_message,
-                                                                    _.bind(this.saveView, this),
-                                                                    _.bind(this.revertView, this));
+        ValidatingView.prototype.showNotificationBar.call(this,
+                                                          this.save_message,
+                                                          _.bind(this.saveView, this),
+                                                          _.bind(this.revertView, this));
     }
 });
 
+return DetailsView;
+
+}); // end define()
