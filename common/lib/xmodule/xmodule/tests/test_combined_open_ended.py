@@ -61,7 +61,7 @@ class OpenEndedChildTest(unittest.TestCase):
         'display_name': 'Name',
         'accept_file_upload': False,
         'close_date': None,
-        's3_interface': "",
+        'storage_interface': "",
         'open_ended_grading_interface': {},
         'skip_basic_checks': False,
     }
@@ -177,7 +177,7 @@ class OpenEndedModuleTest(unittest.TestCase):
         'display_name': 'Name',
         'accept_file_upload': False,
         'close_date': None,
-        's3_interface': test_util_open_ended.S3_INTERFACE,
+        'storage_interface': test_util_open_ended.storage_INTERFACE,
         'open_ended_grading_interface': test_util_open_ended.OPEN_ENDED_GRADING_INTERFACE,
         'skip_basic_checks': False,
     }
@@ -333,7 +333,7 @@ class CombinedOpenEndedModuleTest(unittest.TestCase):
         'display_name': 'Name',
         'accept_file_upload': False,
         'close_date': "",
-        's3_interface': test_util_open_ended.S3_INTERFACE,
+        'storage_interface': test_util_open_ended.storage_INTERFACE,
         'open_ended_grading_interface': test_util_open_ended.OPEN_ENDED_GRADING_INTERFACE,
         'skip_basic_checks': False,
         'graded': True,

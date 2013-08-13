@@ -901,7 +901,7 @@ class ModuleSystem(Runtime):
                  anonymous_student_id='',
                  course_id=None,
                  open_ended_grading_interface=None,
-                 s3_interface=None,
+                 storage_interface=None,
                  cache=None,
                  can_execute_unsafe_code=None,
                  replace_course_urls=None,
@@ -978,7 +978,7 @@ class ModuleSystem(Runtime):
         self.publish = publish
 
         self.open_ended_grading_interface = open_ended_grading_interface
-        self.s3_interface = s3_interface
+        self.storage_interface = storage_interface
 
         self.cache = cache or DoNothingCache()
         self.can_execute_unsafe_code = can_execute_unsafe_code or (lambda: False)
