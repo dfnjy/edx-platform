@@ -46,6 +46,7 @@ def index_course(request):
     indexer = MongoIndexer("localhost", 27017)
     if "course" in request.POST:
         indexer.index_course(request.POST["course"])
+        log.debug("Course indexed")
         return HttpResponse(status=204)
     else:
         return HttpResponseBadRequest()

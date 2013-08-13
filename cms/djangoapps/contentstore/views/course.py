@@ -76,7 +76,7 @@ def course_index(request, org, course, name):
         'coursename': name
     })
 
-    course_id_hash = hashlib.sha1("/".join([org, course, name])).hexdigest()
+    course_title = course
     course = modulestore().get_item(location, depth=3)
     sections = course.get_children()
 
@@ -91,7 +91,7 @@ def course_index(request, org, course, name):
         'upload_asset_callback_url': upload_asset_callback_url,
         'new_unit_category': 'vertical',
         'category': 'vertical',
-        "course_id_hash": course_id_hash,
+        "course_title": course_title,
     })
 
 

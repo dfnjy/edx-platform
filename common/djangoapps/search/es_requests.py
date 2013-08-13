@@ -254,15 +254,13 @@ class MongoIndexer:
         # Youku requires an api key to pull down relevant thumbnails, but
         # if that is ever present this should be switched. Right now it only applies to two videos.
             url = "https://lh6.ggpht.com/8_h5j6hiFXdSl5atSJDf8bJBy85b3IlzNWeRzOqRurfNVI_oiEG-dB3C0vHRclOG8A=w170"
-            image = urllib.urlopen(url)
-            return base64.b64encode(image.read())
-        uuid = self.uuid_from_video_module(video_module)
-        if uuid is False:
-            url = "http://img.youtube.com/vi/Tt9g2se1LcM/4.jpg"
-            image = urllib.urlopen(url)
-            return base64.b64encode(image.read())
-        image = urllib.urlopen("http://img.youtube.com/vi/" + uuid + "/0.jpg")
-        return base64.b64encode(image.read())
+        else:
+            uuid = self.uuid_from_video_module(video_module)
+            if uuid is False:
+                url = "http://img.youtube.com/vi/Tt9g2se1LcM/4.jpg"
+            else:
+                url = "http://img.youtube.com/vi/%s/0.jpg" % uuid
+        return url
 
     def uuid_from_video_module(self, video_module):
         """
@@ -413,25 +411,32 @@ class MongoIndexer:
         Indexes all of the searchable content for a course
         """
         cursor = self.find_modules_for_course(course)
+        log.debug("Course: %s" % course)
+        log.debug(cursor.count())
+        counter = 0
         for _ in range(cursor.count()):
+            counter += 1
             item = cursor.next()
             category = item["_id"]["category"].lower().strip()
+            if category != "html" and category != "discussion" and category != "customtag":
+                log.debug(category)
             data = {}
             index = ""
             if category == "video":
                 data = self.basic_dict(item, "transcript")
+                log.debug(data)
                 index = "transcript-index"
-            elif category == "problem":
-                data = self.basic_dict(item, "problem")
-                index = "problem-index"
-            elif category == "html":
-                pattern = re.compile(r".*?/asset/.*?\.pdf.*?")
-                if pattern.match(item["definition"]["data"]):
-                    data = self.basic_dict(item, "pdf")
-                else:
-                    data = {"test": ""}
-                index = "pdf-index"
+            # elif category == "problem":
+            #     data = self.basic_dict(item, "problem")
+            #     index = "problem-index"
+            # elif category == "html":
+            #     pattern = re.compile(r".*?/asset/.*?\.pdf.*?")
+            #     if pattern.match(item["definition"]["data"]):
+            #         data = self.basic_dict(item, "pdf")
+            #     else:
+            #         data = {"test": ""}
+            #     index = "pdf-index"
             else:
                 continue
             if filter(None, data.values()) == data.values():
-                return self.es_instance.index_data(index, data, data["hash"], data["type_hash"]).content
+                self.es_instance.index_data(index, data, data["type_hash"], data["hash"]).content

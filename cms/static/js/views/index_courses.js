@@ -2,11 +2,11 @@ function indexCourses(){
     $("body").css("cursor", "progress");
     var course = "";
     var url = "http://" + window.location.host + "/index";
-    var courseHashId = $("#index-courses").eq(0).attr("data-hash");
+    var courseTitle = $("#index-courses").eq(0).attr("data-course");
     $.ajax({
         type: "POST",
         url: url,
-        data: {"course": courseHashId},
+        data: {"course": courseTitle},
         success: success
     });
 }
