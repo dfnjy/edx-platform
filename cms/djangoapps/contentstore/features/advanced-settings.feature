@@ -13,7 +13,6 @@ Feature: Advanced (manual) course policy
     Given I am on the Advanced Course Settings page in Studio
     Then the settings are alphabetized
 
-  @Sauce
   Scenario: Test cancel editing key value
     Given I am on the Advanced Course Settings page in Studio
     When I edit the value of a policy key
@@ -22,7 +21,6 @@ Feature: Advanced (manual) course policy
     And I reload the page
     Then the policy key value is unchanged
 
-  @Sauce
   Scenario: Test editing key value
     Given I am on the Advanced Course Settings page in Studio
     When I edit the value of a policy key and save
@@ -30,7 +28,6 @@ Feature: Advanced (manual) course policy
     And I reload the page
     Then the policy key value is changed
 
-  @Sauce
   Scenario: Test how multi-line input appears
     Given I am on the Advanced Course Settings page in Studio
     When I create a JSON object as a value for "discussion_topics"
@@ -38,7 +35,6 @@ Feature: Advanced (manual) course policy
     And I reload the page
     Then it is displayed as formatted
 
-  @Sauce
   Scenario: Test error if value supplied is of the wrong type
     Given I am on the Advanced Course Settings page in Studio
     When I create a JSON object as a value for "display_name"
@@ -47,7 +43,6 @@ Feature: Advanced (manual) course policy
     Then the policy key value is unchanged
 
   # This feature will work in Firefox only when Firefox is the active window
-  @Sauce
   Scenario: Test automatic quoting of non-JSON values
     Given I am on the Advanced Course Settings page in Studio
     When I create a non-JSON value not in quotes
@@ -55,7 +50,6 @@ Feature: Advanced (manual) course policy
     And I reload the page
     Then it is displayed as a string
 
-  @Sauce
   Scenario: Confirmation is shown on save
     Given I am on the Advanced Course Settings page in Studio
     When I edit the value of a policy key
