@@ -90,7 +90,7 @@ class ElasticDatabase:
         with open(settings_file) as source:
             self.index_settings = json.load(source)
 
-    def index_data(self, index, data, type_=None, id_=None):
+    def index_data(self, index, data, type_, id_):
         """
         Actually indexes given data at the indicated type and id.
 
@@ -101,16 +101,6 @@ class ElasticDatabase:
         Data should be a dictionary that matches the mapping of the given type.
         """
 
-        if id_ is None:
-            try:
-                id_ = data["hash"]
-            except KeyError:
-                return None
-        if type_ is None:
-            try:
-                type_ = data["type_hash"]
-            except KeyError:
-                return None
         full_url = "/".join([self.url, index, type_, id_])
         return flaky_request("post", full_url, data=json.dumps(data))
 
@@ -300,18 +290,17 @@ class MongoIndexer:
 
     def thumbnail_from_html(self, html):
         """
-        Returns a binary thumbnail for a given html string.
+        Wraps the given html in identifying tags
 
-        Right now the most straightforward way I could find of doing this was by converting
-        this html to a pdf and then returning a jpg of that pdf.
+        On the front end these html elements will be drawn into canvas elements
+        and then shrunk down to an appropriate size. Previous approach was to
+        cast to pdf and then get a jpg. This is far more straight forward in my mind.
         """
-        pseudo_dest = cStringIO.StringIO()
-        try:
-            pisa.CreatePDF(StringIO.StringIO(html), pseudo_dest)
-        except (CSSParseError, socket.error, IOError):
-            # xhtml2pdf relies on w3c to do some parsing, which results in some errors simply timing out
-            return ""
-        return self.thumbnail_from_pdf(pseudo_dest.getvalue())
+        
+        thumbnail = ("<svg xmlns='http://www.w3.org/2000/svg' width=200 height=200>"+
+               "<foreignObject width='100%' height='100%'>" + html +
+               "</foreignObject></svg>")
+        return thumbnail
 
     def course_name_from_mongo_module(self, mongo_module):
         """
@@ -426,9 +415,9 @@ class MongoIndexer:
                 data = self.basic_dict(item, "transcript")
                 log.debug(data)
                 index = "transcript-index"
-            # elif category == "problem":
-            #     data = self.basic_dict(item, "problem")
-            #     index = "problem-index"
+            elif category == "problem":
+                data = self.basic_dict(item, "problem")
+                index = "problem-index"
             # elif category == "html":
             #     pattern = re.compile(r".*?/asset/.*?\.pdf.*?")
             #     if pattern.match(item["definition"]["data"]):

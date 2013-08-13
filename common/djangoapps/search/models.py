@@ -84,10 +84,7 @@ class SearchResult:
         self.data = entry
         self.url = _return_jump_to_url(entry)
         self.score = score
-        if entry["thumbnail"].startswith("http://"):
-            self.thumbnail = entry["thumbnail"]
-        else:
-            self.thumbnail = "data:image/jpg;base64," + entry["thumbnail"]
+        self.thumbnail = entry["thumbnail"]
         self.snippets = _snippet_generator(self.data["searchable_text"], query)
 
 

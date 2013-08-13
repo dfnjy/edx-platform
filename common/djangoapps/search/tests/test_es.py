@@ -52,11 +52,9 @@ class EsTest(TestCase):
 
     def test_index_data(self):
         fake_data = {"data": "Test String"}
-        self.assertTrue(self.elastic_search.index_data("test-index", fake_data) is None)
         fake_data.update({"hash": random_regex(regex="[a-zA-Z0-9]", length=50)})
-        self.assertTrue(self.elastic_search.index_data("test-index", fake_data) is None)
         fake_data.update({"type_hash": random_regex(regex="[a-zA-Z0-9]", length=50)})
-        response = self.elastic_search.index_data("test-index", fake_data)
+        response = self.elastic_search.index_data("test-index", fake_data, "test-type", "1234")
         self.assertEqual(response.status_code, 201)
 
     def tearDown(self):

@@ -11,6 +11,7 @@
         var old_query = "${ old_query }";
     </script>
     <%namespace name='static' file='/static_content.html'/>
+    <script type="text/javascript" src="${static.url('js/vendor/html2canvas.js')}"
     <script type="text/javascript" src="${static.url('js/search.js')}"></script>
     <link href="${static.url('css/search.css')}" rel="stylesheet" type="text/css"></link>
 </head>
@@ -67,7 +68,11 @@
             			<div class="result-body">
                             <div class="thumbnail-wrapper">
             				    <div class="result-thumbnail">
+                                % if datum.thumbnail.startswith("<svg"):
+                                    <canvas class="htmldata" width='200' height='200' data-html="${datum.thumbnail|h}"></canvas>
+                                % else: 
             					   <img class="thumbnail" src="${datum.thumbnail}" alt="${datum.data['display_name']}"></img>
+                                % endif
             				    </div>
                             </div>
                             <div class="result-snippets">

@@ -77,8 +77,8 @@ function getParameters(){
 
 function getSearchAction(){
     var urlSplit = document.URL.split("/");
-    var courseIndex = urlSplit.indexOf("courses")
-    var searchAction = urlSplit.slice(courseIndex, courseIndex+4)
+    var courseIndex = urlSplit.indexOf("courses");
+    var searchAction = urlSplit.slice(courseIndex, courseIndex+4);
     searchAction.push("search")
     return searchAction.join("/");
 }
@@ -114,13 +114,13 @@ function constructSearchBox(value){
 function replaceWithSearch(){
     $(this).addClass("animated fadeOut");
     var searchWrapper = constructSearchBox("");
-    var width = $("div.search-icon").width()
-    var height = $("div.search-icon").height()
+    var width = $("div.search-icon").width();
+    var height = $("div.search-icon").height();
     $(this).on('webkitAnimationEnd oanimationend oAnimationEnd msAnimationEnd animationend',
         function (e){
             $(this).parent().replaceWith(searchWrapper);
-            $("#searchbox").css("width", width)
-            $("#searchbox").css("height", height)
+            $("#searchbox").css("width", width);
+            $("#searchbox").css("height", height);
             // $('#search-bar').remove()
             if (document.URL.indexOf("search?s=") == -1){
                 document.getElementById("searchbox").focus();
@@ -137,11 +137,34 @@ function updateOldSearch(){
     }
 }
 
+function convertProblemsToThumbnails(element){
+    var ctx = element.getContext("2d");
+    var DOMURL = self.URL || self.webkitURL || self;
+    var img = new Image();
+    var svg = new Blob([$(element).attr('data-html')], {type: "image/svg+xml;charset=utf-8"});
+    var url = DOMURL.createObjectURL(svg);
+    img.onload = function(){
+        ctx.drawImage(img, 0, 0);
+        DOMURL.revokeObjectURL(url);
+    };
+    console.log(img);
+    img.src = url;
+    $("body").append(img);
+}
+
+function renderProblems(){
+    problems = $("canvas.htmldata");
+    for (var i=0; i<problems.length; i++){
+        convertProblemsToThumbnails(problems[i]);
+    }
+}
+
 $(document).ready(function(){
     if (document.URL.indexOf("search?s=") !== -1){
         updateOldSearch();
     } else {
         $("a.search-bar").bind("click", replaceWithSearch);
     }
+    renderProblems();
 });
 

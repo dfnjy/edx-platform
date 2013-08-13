@@ -98,22 +98,20 @@ class MongoTest(TestCase):
         document = {"definition": {"data": "player.youku.com"}}
         image = self.indexer.thumbnail_from_video_module(document)
         url = "https://lh6.ggpht.com/8_h5j6hiFXdSl5atSJDf8bJBy85b3IlzNWeRzOqRurfNVI_oiEG-dB3C0vHRclOG8A=w170"
-        test_image = urllib.urlopen(url)
-        self.assertEquals(image, base64.b64encode(test_image.read()))
+        self.assertEquals(image, url)
 
     def test_bad_video(self):
         document = {"definition": {"data": "blank"}}
         image = self.indexer.thumbnail_from_video_module(document)
         url = "http://img.youtube.com/vi/Tt9g2se1LcM/4.jpg"
-        test_image = urllib.urlopen(url)
-        self.assertEquals(image, base64.b64encode(test_image.read()))
+        self.assertEquals(image, url)
 
     def test_good_thumbnail(self):
         test_string = '<video youtube=\"0.75:-gKKUBQ2NWA,1.0:dJvsFg10JY,1.25:lm3IKbRE2VA,1.50:Pz0XiZ8wO9o\">'
         document = {"definition": {"data": test_string}}
         image = self.indexer.thumbnail_from_video_module(document)
-        test_image = urllib.urlopen("http://img.youtube.com/vi/dJvsFg10JY/0.jpg")
-        self.assertEquals(base64.b64encode(test_image.read()), image)
+        url = "http://img.youtube.com/vi/dJvsFg10JY/0.jpg"
+        self.assertEquals(url, image)
 
     def test_pdf_thumbnail(self):
         bad_pseduo_file = StringIO()
@@ -176,10 +174,7 @@ class MongoTest(TestCase):
         self.module_collection.insert(document)
         course_document = {"_id": {"category": "course", "course": document["_id"]["course"], "name": "test_course"}}
         self.module_collection.insert(course_document)
-        check = self.indexer.index_course("test-course")
-        return_dict = json.loads(check)
-        self.assertEquals(return_dict["ok"], True)
-        self.assertEquals(return_dict["_index"], "problem-index")
+        self.indexer.index_course("test-course")
 
     def test_index_course_pdf(self):
         document = dummy_document("_id", ["org"], "regex", regex="[a-zA-Z0-9]", length=50)
