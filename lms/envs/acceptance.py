@@ -84,6 +84,8 @@ MITX_FEATURES['ENABLE_DISCUSSION_SERVICE'] = True
 # Use the auto_auth workflow for creating users and logging them in
 MITX_FEATURES['AUTOMATIC_AUTH_FOR_TESTING'] = True
 
+
+# Information needed to utilize Sauce Labs.
 MITX_FEATURES['SAUCE'] = {
     'USE' : False,
     'USERNAME' : '<USERNAME>',
@@ -93,7 +95,7 @@ MITX_FEATURES['SAUCE'] = {
     'VERSION' : '',
     'DEVICE' : '',
     'SESSION' : 'Lettuce Tests',
-    'BUILD' : 'CMS TESTS',
+    'BUILD' : 'LMS TESTS',
     'TAGS' : ''
 }
 
