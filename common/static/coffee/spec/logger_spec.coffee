@@ -1,7 +1,4 @@
 describe 'Logger', ->
-  it 'expose window.log_event', ->
-    expect(window.log_event).toBe Logger.log
-
   describe 'log', ->
     it 'send a request to log event', ->
       spyOn $, 'postWithPrefix'

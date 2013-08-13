@@ -41,6 +41,3 @@ class @Logger
           event: ''
           page: window.location.href
         async: false
-
-# Keeping this for compatibility issue only.
-@log_event = Logger.log
